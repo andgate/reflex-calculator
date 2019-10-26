@@ -3,6 +3,7 @@
 (import ./reflex-platform { inherit system; }).project ({ pkgs, ... }: {
   packages = {
     frontend = ./frontend;
+    clay = ./clay;
   };
 
   shells = {

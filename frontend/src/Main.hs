@@ -14,13 +14,6 @@ import Data.Text (Text, pack, unpack)
 import qualified Data.Text as Text
 import Text.Read (readMaybe)
 
-import qualified GHCJS.Types    as T
-import qualified GHCJS.Foreign
-
-import qualified Data.JSString as S
-
-import System.IO.Unsafe
-
 data CalcPad
   = PadNum Int
   | PadOp CalcOp

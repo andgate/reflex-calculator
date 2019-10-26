@@ -1,3 +1,6 @@
 [submodule "reflex-platform"]
 	path = reflex-platform
 	url = https://github.com/reflex-frp/reflex-platform
+[submodule "clay"]
+	path = clay
+	url = https://github.com/juliendehos/clay
