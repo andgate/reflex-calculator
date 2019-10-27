@@ -45,7 +45,7 @@ termP = ( Val    <$> (   try doubleP
         )
     <|> ( Parens <$> parensP expP )
 
-table = [ [ binary  "*"  (BinOp OpMul), binary  "/"  (BinOp OpDiv)  ]
+table = [ [ binary  "×"  (BinOp OpMul), binary  "÷"  (BinOp OpDiv)  ]
         , [ binary  "+"  (BinOp OpAdd), binary  "-"  (BinOp OpSub)  ]
         , [ rbinary "^"  (BinOp OpPow)]
         ]

@@ -12,6 +12,8 @@ calcStyle = encodeUtf8 $ toStrict $ render $ do
     borderRadius (px 10) (px 10) (px 10) (px 10)
     background (rgb 0xD7 0xD6 0xDA)
     border solid (px 10) black
+    width (px 210)
+    height (px 300)
 
   ".calc-screen" ? do
     borderRadius (px 10) (px 10) (px 10) (px 10)
@@ -19,6 +21,7 @@ calcStyle = encodeUtf8 $ toStrict $ render $ do
     color black
     textAlign (alignSide sideRight)
     width (pct 100)
+    fontSize (px 32)
     
   ".calc-item" ? do
     borderRadius (px 10) (px 10) (px 10) (px 10)
@@ -27,3 +30,14 @@ calcStyle = encodeUtf8 $ toStrict $ render $ do
     fontSize (px 23)
     justifyContent center
     width (pct 100)
+    height (pct 100)
+
+  ".calc-item.num" ? do
+    borderRadius (px 10) (px 10) (px 10) (px 10)
+    background grey
+
+  ".calc-item.clear" ? do
+    background red
+
+  ".calc-item.back" ? do
+    background orangered

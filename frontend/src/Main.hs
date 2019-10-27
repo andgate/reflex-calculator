@@ -41,36 +41,36 @@ main = mainWidgetWithCss calcStyle $
         dynText screenText
 
     row1 <- el "tr" $ do
-      btnClear <- el "td" $ calcButton PadClear "C"
-      btnBack <- el "td" $ calcButton PadBack "&larr;"
+      btnClear <- el "td" $ buttonClass PadClear "calc-item clear" "C"
+      btnBack <- el "td" $ buttonClass PadBack "calc-item back" "←"
       btnMod <- el "td" $ calcButton (PadOp OpMod) "%"
       btnAdd <- el "td" $ calcButton (PadOp OpAdd) "+"
       return [btnClear, btnBack, btnMod, btnAdd]
     
     row2 <- el "tr" $ do
-      btn7 <- el "td" $ calcButton (PadNum 7) "7"
-      btn8 <- el "td" $ calcButton (PadNum 8) "8"
-      btn9 <- el "td" $ calcButton (PadNum 9) "9"
-      btnSub <- el "td" $ calcButton (PadOp OpDiv) "-"
+      btn7 <- el "td" $ numButton (PadNum 7) "7"
+      btn8 <- el "td" $ numButton (PadNum 8) "8"
+      btn9 <- el "td" $ numButton (PadNum 9) "9"
+      btnSub <- el "td" $ calcButton (PadOp OpSub) "-"
       return [btn7, btn8, btn9, btnSub]
 
     row3 <- el "tr" $ do
-      btn4 <- el "td" $ calcButton (PadNum 4) "4"
-      btn5 <- el "td" $ calcButton (PadNum 5) "5"
-      btn6 <- el "td" $ calcButton (PadNum 6) "6"
-      btnMul <- el "td" $ calcButton (PadOp OpMul) "*"
+      btn4 <- el "td" $ numButton (PadNum 4) "4"
+      btn5 <- el "td" $ numButton (PadNum 5) "5"
+      btn6 <- el "td" $ numButton (PadNum 6) "6"
+      btnMul <- el "td" $ calcButton (PadOp OpMul) "×"
       return [btn4, btn5, btn6, btnMul]
     
     row4 <- el "tr" $ do
-      btn1 <- el "td" $ calcButton (PadNum 1) "1"
-      btn2 <- el "td" $ calcButton (PadNum 2) "2"
-      btn3 <- el "td" $ calcButton (PadNum 3) "3"
-      btnDiv <- el "td" $ calcButton (PadOp OpDiv) "&divide;"
+      btn1 <- el "td" $ numButton (PadNum 1) "1"
+      btn2 <- el "td" $ numButton (PadNum 2) "2"
+      btn3 <- el "td" $ numButton (PadNum 3) "3"
+      btnDiv <- el "td" $ calcButton (PadOp OpDiv) "÷"
       return [btn1, btn2, btn3, btnDiv]
     
     row5 <- el "tr" $ do
       btnDot <- el "td" $ calcButton PadDot "."
-      btn0 <- el "td" $ calcButton (PadNum 0) "0"
+      btn0 <- el "td" $ numButton (PadNum 0) "0"
       btnEq <- elAttr "td" ("colspan" =: "2") (calcButton PadEq "=")
       return [btnDot, btn0, btnEq]
     
@@ -86,8 +86,8 @@ updateInputBox padOp input = case padOp of
   PadOp arithOp -> case arithOp of
     OpAdd -> input <> "+"
     OpSub -> input <> "-"
-    OpMul -> input <> "*"
-    OpDiv -> input <> "/"
+    OpMul -> input <> "×"
+    OpDiv -> input <> "÷"
     OpMod -> input <> "%"
   PadDot -> input <> "."
   PadBack | Text.length input <= 1 -> "0"
@@ -103,6 +103,9 @@ buttonAttr a attrs label = do
 
 calcButton :: (DomBuilder t m) => a -> Text -> m (Event t a)
 calcButton a btnLabel = buttonClass a "calc-item" btnLabel
+
+numButton :: (DomBuilder t m) => a -> Text -> m (Event t a)
+numButton a btnLabel = buttonClass a "calc-item num" btnLabel
 
 buttonClass :: (DomBuilder t m) => a -> Text -> Text -> m (Event t a)
 buttonClass a elemTag btnLabel = do
