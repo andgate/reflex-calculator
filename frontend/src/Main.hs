@@ -21,6 +21,8 @@ data CalcPad
   | PadDot
   | PadBack
   | PadClear
+  | PadEq
+  | PadInit
 
 data CalcOp
   = OpAdd
@@ -33,14 +35,14 @@ data CalcOp
 
 main :: IO ()
 main = mainWidgetWithCss calcStyle $
-  el "table" $ mdo
+  elClass "table" "calc-body" $ mdo
     el "tr" $ do
-      elAttr "td" ("colspan" =: "3")$ dynText inputText
-      el "td" $ dynText resultText
+      elAttr "td" ("colspan" =: "4" <> "class" =: "calc-screen") $
+        dynText screenText
 
     row1 <- el "tr" $ do
       btnClear <- el "td" $ calcButton PadClear "C"
-      btnBack <- el "td" $ calcButton PadBack "<-"
+      btnBack <- el "td" $ calcButton PadBack "&larr;"
       btnMod <- el "td" $ calcButton (PadOp OpMod) "%"
       btnAdd <- el "td" $ calcButton (PadOp OpAdd) "+"
       return [btnClear, btnBack, btnMod, btnAdd]
@@ -63,25 +65,22 @@ main = mainWidgetWithCss calcStyle $
       btn1 <- el "td" $ calcButton (PadNum 1) "1"
       btn2 <- el "td" $ calcButton (PadNum 2) "2"
       btn3 <- el "td" $ calcButton (PadNum 3) "3"
-      btnDiv <- el "td" $ calcButton (PadOp OpDiv) "/"
+      btnDiv <- el "td" $ calcButton (PadOp OpDiv) "&divide;"
       return [btn1, btn2, btn3, btnDiv]
     
-    (row5, btnEq) <- el "tr" $ do
+    row5 <- el "tr" $ do
       btnDot <- el "td" $ calcButton PadDot "."
       btn0 <- el "td" $ calcButton (PadNum 0) "0"
-      btnEq <- elAttr "td" ("colspan" =: "2") (calcButton () "=")
-      return ([btnDot, btn0], btnEq)
+      btnEq <- elAttr "td" ("colspan" =: "2") (calcButton PadEq "=")
+      return [btnDot, btn0, btnEq]
     
     let padEv = (leftmost . mconcat) [row1, row2, row3, row4, row5]
-    inputText <- foldDyn updateInputBox mempty padEv
-
-    let result = (pack . show . eval . unpack) <$> inputText
-    -- let numberString = maybe "???" (pack . show) <$> result
-    resultText <- holdDyn "0" $ tag (current result) btnEq
+    screenText <- foldDyn updateInputBox "0" padEv
 
     return ()
 
 updateInputBox :: CalcPad -> Text -> Text
+updateInputBox padOp "0" = updateInputBox padOp mempty 
 updateInputBox padOp input = case padOp of
   PadNum i -> input <> (pack . show) i
   PadOp arithOp -> case arithOp of
@@ -91,8 +90,11 @@ updateInputBox padOp input = case padOp of
     OpDiv -> input <> "/"
     OpMod -> input <> "%"
   PadDot -> input <> "."
-  PadBack -> if Text.null input then "" else Text.init input
-  PadClear -> mempty
+  PadBack | Text.length input <= 1 -> "0"
+          | otherwise              -> Text.init input
+  PadClear -> "0"
+  PadEq -> pack . show . eval . unpack $ input
+
 
 buttonAttr :: (DomBuilder t m) => a -> Map Text Text -> Text -> m (Event t a)
 buttonAttr a attrs label = do
