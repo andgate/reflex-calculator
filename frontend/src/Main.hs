@@ -79,22 +79,38 @@ main = mainWidgetWithCss calcStyle $
 
     return ()
 
+
 updateInputBox :: CalcPad -> Text -> Text
 updateInputBox padOp "0" = updateInputBox padOp mempty 
-updateInputBox padOp input = case padOp of
-  PadNum i -> input <> (pack . show) i
-  PadOp arithOp -> case arithOp of
-    OpAdd -> input <> "+"
-    OpSub -> input <> "-"
-    OpMul -> input <> "×"
-    OpDiv -> input <> "÷"
-    OpMod -> input <> "%"
-  PadDot -> input <> "."
-  PadBack | Text.length input <= 1 -> "0"
-          | otherwise              -> Text.init input
-  PadClear -> "0"
-  PadEq -> pack . show . eval . unpack $ input
+updateInputBox padOp input
+  | Text.length input == 10 && opAppends padOp = input
+  | otherwise = case padOp of
+      PadNum i ->
+        input <> (pack . show) i
 
+      PadOp arithOp ->
+        case arithOp of
+          OpAdd -> input <> "+"
+          OpSub -> input <> "-"
+          OpMul -> input <> "×"
+          OpDiv -> input <> "÷"
+          OpMod -> input <> "%"
+      PadDot -> input <> "."
+
+      PadBack | Text.length input <= 1 -> "0"
+              | otherwise              -> Text.init input
+      
+      PadClear -> "0"
+      PadEq -> pack . show . eval . unpack $ input
+
+opAppends :: CalcPad -> Bool
+opAppends = \case
+  PadNum _ -> True
+  PadOp _  -> True
+  PadDot   -> True
+  PadBack  -> False
+  PadClear -> False
+  PadEq    -> False
 
 buttonAttr :: (DomBuilder t m) => a -> Map Text Text -> Text -> m (Event t a)
 buttonAttr a attrs label = do
