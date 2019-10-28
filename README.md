@@ -13,3 +13,9 @@ The calculator is built with
 ```
 nix-build -o frontend-result -A ghcjs.frontend
 ```
+
+The results are in `frontend-result`.
+They can be minified with
+```
+ccjs all.js --compilation_level=ADVANCED_OPTIMIZATIONS --jscomp_off=checkVars --externs=node --externs=all.js.externs > all.min.js
+```

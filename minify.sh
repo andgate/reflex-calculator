@@ -1,0 +1,1 @@
+closure-compiler frontend-result/bin/frontend.jsexe/all.js --compilation_level=ADVANCED_OPTIMIZATIONS --jscomp_off=checkVars --externs=frontend-result/bin/frontend.jsexe/all.js.externs > all.min.js

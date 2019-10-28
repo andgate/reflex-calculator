@@ -34,8 +34,14 @@ data CalcOp
 
 
 main :: IO ()
-main = mainWidgetWithCss calcStyle $
-  elClass "table" "calc-body" $ mdo
+main = mainWidgetWithCss calcStyle $ mdo
+  padEv <- padWidget screenText
+  screenText <- foldDyn updateInputBox "0" padEv
+  return ()
+
+padWidget :: (PostBuild t m, DomBuilder t m) => Dynamic t Text -> m (Event t CalcPad)
+padWidget screenText =
+  elClass "table" "calc-body" $ do
     el "tr" $ do
       elAttr "td" ("colspan" =: "4" <> "class" =: "calc-screen") $
         dynText screenText
@@ -73,12 +79,10 @@ main = mainWidgetWithCss calcStyle $
       btn0 <- el "td" $ numButton (PadNum 0) "0"
       btnEq <- elAttr "td" ("colspan" =: "2") (calcButton PadEq "=")
       return [btnDot, btn0, btnEq]
-    
+
     let padEv = (leftmost . mconcat) [row1, row2, row3, row4, row5]
-    screenText <- foldDyn updateInputBox "0" padEv
-
-    return ()
-
+    return padEv
+  
 
 updateInputBox :: CalcPad -> Text -> Text
 updateInputBox padOp "0" = updateInputBox padOp mempty 
