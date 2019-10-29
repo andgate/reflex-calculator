@@ -17,61 +17,54 @@ import Text.Read (readMaybe)
 
 data CalcPad
   = PadNum Int
-  | PadOp CalcOp
+  | PadOp Text
   | PadDot
   | PadBack
   | PadClear
   | PadEq
-  | PadInit
-
-data CalcOp
-  = OpAdd
-  | OpSub
-  | OpDiv
-  | OpMul
-  | OpMod
-
 
 
 main :: IO ()
 main = mainWidgetWithCss calcStyle $ mdo
-  padEv <- padWidget screenText
-  screenText <- foldDyn updateInputBox "0" padEv
+  padEv <- padWidget screenDyn
+  screenDyn <- foldDyn processPadInput ("0", mempty) padEv
   return ()
 
-padWidget :: (PostBuild t m, DomBuilder t m) => Dynamic t Text -> m (Event t CalcPad)
-padWidget screenText =
+padWidget :: (PostBuild t m, DomBuilder t m) => Dynamic t (Text, Map Text Text) -> m (Event t CalcPad)
+padWidget screenDyn =
   elClass "table" "calc-body" $ do
     el "tr" $ do
-      elAttr "td" ("colspan" =: "4" <> "class" =: "calc-screen") $
-        dynText screenText
+      let screenText = fst <$> screenDyn
+          screenStyle = snd <$> screenDyn
+          screenAttr = mappend <$> pure ("colspan" =: "4" <> "class" =: "calc-screen") <*> screenStyle
+      elDynAttr "td" screenAttr $ dynText screenText
 
     row1 <- el "tr" $ do
       btnClear <- el "td" $ buttonClass PadClear "calc-item clear" "C"
       btnBack <- el "td" $ buttonClass PadBack "calc-item back" "←"
-      btnMod <- el "td" $ calcButton (PadOp OpMod) "%"
-      btnAdd <- el "td" $ calcButton (PadOp OpAdd) "+"
+      btnMod <- el "td" $ calcButton (PadOp "%") "%"
+      btnAdd <- el "td" $ calcButton (PadOp "+") "+"
       return [btnClear, btnBack, btnMod, btnAdd]
     
     row2 <- el "tr" $ do
       btn7 <- el "td" $ numButton (PadNum 7) "7"
       btn8 <- el "td" $ numButton (PadNum 8) "8"
       btn9 <- el "td" $ numButton (PadNum 9) "9"
-      btnSub <- el "td" $ calcButton (PadOp OpSub) "-"
+      btnSub <- el "td" $ calcButton (PadOp "-") "-"
       return [btn7, btn8, btn9, btnSub]
 
     row3 <- el "tr" $ do
       btn4 <- el "td" $ numButton (PadNum 4) "4"
       btn5 <- el "td" $ numButton (PadNum 5) "5"
       btn6 <- el "td" $ numButton (PadNum 6) "6"
-      btnMul <- el "td" $ calcButton (PadOp OpMul) "×"
+      btnMul <- el "td" $ calcButton (PadOp "×") "×"
       return [btn4, btn5, btn6, btnMul]
     
     row4 <- el "tr" $ do
       btn1 <- el "td" $ numButton (PadNum 1) "1"
       btn2 <- el "td" $ numButton (PadNum 2) "2"
       btn3 <- el "td" $ numButton (PadNum 3) "3"
-      btnDiv <- el "td" $ calcButton (PadOp OpDiv) "÷"
+      btnDiv <- el "td" $ calcButton (PadOp "÷") "÷"
       return [btn1, btn2, btn3, btnDiv]
     
     row5 <- el "tr" $ do
@@ -84,28 +77,42 @@ padWidget screenText =
     return padEv
   
 
-updateInputBox :: CalcPad -> Text -> Text
+processPadInput :: CalcPad -> (Text, Map Text Text) -> (Text, Map Text Text)
+processPadInput pad (input, _) = styleError input $ updateInputBox pad input
+
+updateInputBox :: CalcPad -> Text -> Maybe Text
 updateInputBox padOp "0" = updateInputBox padOp mempty 
 updateInputBox padOp input
-  | Text.length input == 10 && opAppends padOp = input
+  | Text.length input == 10 && opAppends padOp = Just input
   | otherwise = case padOp of
       PadNum i ->
-        input <> (pack . show) i
+        Just $ input <> (pack . show) i
 
-      PadOp arithOp ->
-        case arithOp of
-          OpAdd -> input <> "+"
-          OpSub -> input <> "-"
-          OpMul -> input <> "×"
-          OpDiv -> input <> "÷"
-          OpMod -> input <> "%"
-      PadDot -> input <> "."
+      PadOp arithOp -> Just $ input <> arithOp
+      PadDot -> Just $ input <> "."
 
-      PadBack | Text.length input <= 1 -> "0"
-              | otherwise              -> Text.init input
+      PadBack | Text.length input <= 1 -> Just "0"
+              | otherwise              -> Just $ Text.init input
       
-      PadClear -> "0"
-      PadEq -> pack . show . eval . unpack $ input
+      PadClear -> Just "0"
+      PadEq -> formatDouble <$> eval input
+
+
+-- Need this because I haven't figured out floating text boxes
+-- This will give wrong answers when doubles have >10 digits
+-- before the decimal.
+formatDouble :: Double -> Text
+formatDouble = Text.take 10 . dropTrailingZero . pack . show
+  where dropTrailingZero t =
+          if Text.length t >= 3 && Text.takeEnd 2 t == ".0"
+            then Text.dropEnd 2 t
+            else t
+
+styleError :: Text -> Maybe Text -> (Text, Map Text Text)
+styleError _ (Just result) = (result, mempty)
+styleError input Nothing = (input, errStyle)
+  where errStyle = "style" =: ("color: " <> "red")
+
 
 opAppends :: CalcPad -> Bool
 opAppends = \case

@@ -5,5 +5,7 @@ import Eval.AST
 
 import Data.Either
 
-eval :: String -> Double
-eval ins = fromRight undefined (simplify <$> parseExp ins)
+import Data.Text (Text)
+
+eval :: Text -> Maybe Double
+eval ins = either (const Nothing) Just (simplify <$> parseExp ins)

@@ -14,10 +14,10 @@ import Control.Monad.Combinators.Expr
 
 type Parser = Parsec Void Text
 
-parseExp :: String -> Either String AST
+parseExp :: Text -> Either Text AST
 parseExp input =
-  case parse expP "" (pack input) of
-    Left ebundle -> Left (errorBundlePretty ebundle)
+  case parse expP "" input of
+    Left ebundle -> Left (pack $ errorBundlePretty ebundle)
     Right ast    -> Right ast
 
 
