@@ -1,6 +1,6 @@
 ## Try It
 
-https://andgate-reflex-calculator.glitch.com
+https://andgate-reflex-calculator.glitch.me
 
 ## Building
 
