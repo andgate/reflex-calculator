@@ -1,3 +1,7 @@
+## Try It
+
+https://andgate-reflex-calculator.glitch.com
+
 ## Building
 
 Requires nix. Additionally, you need to edit `/etc/nix/nix.config` for macosx.
